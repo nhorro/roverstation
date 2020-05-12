@@ -23,7 +23,7 @@ IDLE_ANGLE = (MIN_ANGLE + MAX_ANGLE)/2.0
 ANGLE_ACCELERATION = 0.1
 ANGLE_TOLERANCE = ANGLE_ACCELERATION/2.0
 
-REFRESH_INTERVAL_IN_MS = 50
+REFRESH_INTERVAL_IN_MS = 100
 
 MODE_THROTTLE_ENABLED = 0x01
 MODE_ROTATING_ENABLED = 0x02
@@ -97,10 +97,10 @@ class SteeringControllerApplication(QApplication):
 
         self.control_keys=control_keys
 
-        rospy.init_node('publisher')
+        rospy.init_node('roverteleop')
         self.cmd_vel_topic = vehicle_id+'/cmd_vel'
         rospy.loginfo("Publishing to %s" % self.cmd_vel_topic)
-        self.pub = rospy.Publisher(self.cmd_vel_topic, Twist, queue_size=10)
+        self.pub = rospy.Publisher(self.cmd_vel_topic, Twist, queue_size=1)
         self.msg = Twist()
         self.msg.linear.x = 0
         self.msg.linear.y = 0
