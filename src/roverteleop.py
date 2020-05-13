@@ -117,16 +117,19 @@ class SteeringControllerApplication(QApplication):
         self.keyboardWidget = KeyboardWidget()
         self.keyboardWidget.keyPressed.connect(self.on_key_pressed)
         self.keyboardWidget.keyReleased.connect(self.on_key_released)
+        self.keyboardWidget.cb_enabled.stateChanged.connect(self.enable_state_changed)
+
         self.keyboardWidget.show()
     
         self.throttle = 0.0        
         self.angle = 0.0 
         self.acc_linear = 0.0 
         self.acc_angular = 0.0
+        self.enable_cmd_vel_pub = False
 
         self.timer.start()
 
-    def on_timeout_accel(self):
+    def on_timeout_accel(self):        
         if self.mode & MODE_THROTTLE_ENABLED:
             self.throttle += self.acc_linear
         else:
@@ -162,9 +165,13 @@ class SteeringControllerApplication(QApplication):
 
         self.msg.linear.x = self.throttle
         self.msg.angular.z = self.angle
-        self.pub.publish(self.msg)
 
         self.keyboardWidget.update(self.throttle, self.angle)
+
+        if self.enable_cmd_vel_pub:
+            self.pub.publish(self.msg)
+        else:
+            rospy.logwarn("Publishing is disabled.")
 
     def on_key_pressed(self, key):        
         if key == self.control_keys[0]:
@@ -174,10 +181,10 @@ class SteeringControllerApplication(QApplication):
             self.mode|= MODE_THROTTLE_ENABLED
             self.acc_linear= -THROTTLE_ACCELERATION
         
-        if key == self.control_keys[2]:
+        if key == self.control_keys[3]:
             self.mode |= MODE_ROTATING_ENABLED
             self.acc_angular = -ANGLE_ACCELERATION            
-        elif key == self.control_keys[3]:
+        elif key == self.control_keys[2]:
             self.mode |= MODE_ROTATING_ENABLED
             self.acc_angular = ANGLE_ACCELERATION
             self.acc_linear = THROTTLE_ACCELERATION
@@ -196,6 +203,14 @@ class SteeringControllerApplication(QApplication):
         if (key == self.control_keys[2]) or (key == self.control_keys[3]):
             self.mode &= ~MODE_ROTATING_ENABLED
             #self.acc_angular = 0
+
+    def enable_state_changed(self, state):
+        self.enable_cmd_vel_pub = state
+        if state:
+            rospy.loginfo("Control is enabled")
+        else:
+            rospy.loginfo("Control is disabled")
+
 
 if __name__ == '__main__':
     app = SteeringControllerApplication(sys.argv)

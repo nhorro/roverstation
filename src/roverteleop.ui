@@ -168,6 +168,13 @@
      </item>
     </layout>
    </item>
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="cb_enabled">
+     <property name="text">
+      <string>Enable</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

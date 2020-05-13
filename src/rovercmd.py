@@ -14,6 +14,13 @@ from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
 from roverbridge.srv import move
 
+"""
+
+
+"""
+
+
+
 
 DEFAULT_CONTROL_KEYS = [Qt.Key_W, Qt.Key_S, Qt.Key_A,Qt.Key_D ]
 
@@ -45,66 +52,112 @@ class RoverCommanderApplication(QApplication):
         self.keyboardWidget = KeyboardWidget()
         self.keyboardWidget.keyPressed.connect(self.on_key_pressed)
 
-        self.keyboardWidget.interval_phase0.setValidator(QDoubleValidator())
-        self.keyboardWidget.interval_phase0.textChanged.connect(self.update_params)
-        self.keyboardWidget.motor_a_phase0.setValidator(QIntValidator())
-        self.keyboardWidget.motor_a_phase0.textChanged.connect(self.update_params)
-        self.keyboardWidget.motor_b_phase0.setValidator(QIntValidator())
-        self.keyboardWidget.motor_b_phase0.textChanged.connect(self.update_params)
-        self.keyboardWidget.interval_phase1.setValidator(QDoubleValidator())
-        self.keyboardWidget.interval_phase1.textChanged.connect(self.update_params)
-        self.keyboardWidget.motor_a_phase1.setValidator(QIntValidator())
-        self.keyboardWidget.motor_a_phase1.textChanged.connect(self.update_params)
-        self.keyboardWidget.motor_b_phase1.setValidator(QIntValidator())
-        self.keyboardWidget.motor_b_phase1.textChanged.connect(self.update_params)
+        self.controls = [ 
+            # Forward
+            [
+                self.keyboardWidget.fwd_interval_phase0,
+                self.keyboardWidget.fwd_motor_a_phase0,
+                self.keyboardWidget.fwd_motor_b_phase0,
+                self.keyboardWidget.fwd_interval_phase1,
+                self.keyboardWidget.fwd_motor_a_phase1,
+                self.keyboardWidget.fwd_motor_b_phase1
+            ],
+
+            # Left
+            [
+                self.keyboardWidget.lft_interval_phase0,
+                self.keyboardWidget.lft_motor_a_phase0,
+                self.keyboardWidget.lft_motor_b_phase0,
+                self.keyboardWidget.lft_interval_phase1,
+                self.keyboardWidget.lft_motor_a_phase1,
+                self.keyboardWidget.lft_motor_b_phase1
+            ],
+
+            # Right
+            [
+                self.keyboardWidget.rgt_interval_phase0,
+                self.keyboardWidget.rgt_motor_a_phase0,
+                self.keyboardWidget.rgt_motor_b_phase0,
+                self.keyboardWidget.rgt_interval_phase1,
+                self.keyboardWidget.rgt_motor_a_phase1,
+                self.keyboardWidget.rgt_motor_b_phase1
+            ]
+        ]
 
         self.keyboardWidget.show()
+        self.init_controls()
 
-        self.interval_phase_0 = 0.5
-        self.motor_a_phase_0 = 100
-        self.motor_b_phase_0 = 100
-        self.interval_phase_1 = 5
-        self.motor_a_phase_1 = 80
-        self.motor_b_phase_1 = 0
 
-    def update_params(self,value):
-        self.interval_phase_0 = float(self.keyboardWidget.interval_phase0.text())                
-        self.motor_a_phase_0 = float(self.keyboardWidget.motor_a_phase0.text())                
-        self.motor_b_phase_0 = float(self.keyboardWidget.motor_b_phase0.text())                
-        self.interval_phase_1 = float(self.keyboardWidget.interval_phase1.text())                
-        self.motor_a_phase_1 = float(self.keyboardWidget.motor_a_phase1.text())                
-        self.motor_b_phase_1 = float(self.keyboardWidget.motor_b_phase1.text())                
+    def init_controls(self):
+        for tab in self.controls:            
+            tab[0].setValidator(QDoubleValidator())
+            tab[0].textChanged.connect(self.update_params)
+            tab[1].setValidator(QIntValidator())
+            tab[1].textChanged.connect(self.update_params)
+            tab[2].setValidator(QIntValidator())
+            tab[2].textChanged.connect(self.update_params)
+            tab[3].setValidator(QDoubleValidator())
+            tab[3].textChanged.connect(self.update_params)
+            tab[4].setValidator(QIntValidator())
+            tab[4].textChanged.connect(self.update_params)
+            tab[5].setValidator(QIntValidator())
+            tab[5].textChanged.connect(self.update_params)
+        self.update_params(0)
+
+
+    def update_params(self,ignored):    
+        self.interval_phase_0 = [0,0,0]
+        self.motor_a_phase_0 = [0,0,0]
+        self.motor_b_phase_0 = [0,0,0]
+        self.interval_phase_1 = [0,0,0]
+        self.motor_a_phase_1 = [0,0,0]
+        self.motor_b_phase_1 = [0,0,0]
+        for idx in range(len(self.controls)):
+            self.interval_phase_0[idx] = float(self.controls[idx][0].text()) 
+            self.motor_a_phase_0[idx] = float(self.controls[idx][1].text()) 
+            self.motor_b_phase_0[idx] = float(self.controls[idx][2].text()) 
+            self.interval_phase_1[idx] = float(self.controls[idx][3].text()) 
+            self.motor_a_phase_1[idx] = float(self.controls[idx][4].text()) 
+            self.motor_b_phase_1[idx] = float(self.controls[idx][5].text()) 
         
     def on_key_pressed(self, key):        
 
         if key in self.control_keys:
             try:
-                if key == self.control_keys[0]:                    
-                    motor_a_phase_0_value = self.motor_a_phase_0
-                    motor_b_phase_0_value = self.motor_b_phase_0
-                    motor_a_phase_1_value = self.motor_a_phase_1
-                    motor_b_phase_1_value = self.motor_b_phase_1
+                if key == self.control_keys[0]:    
+                    interval_phase_0 = self.interval_phase_0[0]
+                    interval_phase_1 = self.interval_phase_1[0]
+                    motor_a_phase_0_value = self.motor_a_phase_0[0]
+                    motor_b_phase_0_value = self.motor_b_phase_0[0]
+                    motor_a_phase_1_value = self.motor_a_phase_1[0]
+                    motor_b_phase_1_value = self.motor_b_phase_1[0]
                 elif key == self.control_keys[1]:
-                    motor_a_phase_0_value = -self.motor_a_phase_0
-                    motor_b_phase_0_value = -self.motor_b_phase_0
-                    motor_a_phase_1_value = -self.motor_a_phase_1
-                    motor_b_phase_1_value = -self.motor_b_phase_1
-                elif key == self.control_keys[2]:
-                    motor_a_phase_0_value = self.motor_a_phase_0
-                    motor_b_phase_0_value = -self.motor_b_phase_0
-                    motor_a_phase_1_value = self.motor_a_phase_1
-                    motor_b_phase_1_value = -self.motor_b_phase_1
+                    interval_phase_0 = self.interval_phase_0[0]
+                    interval_phase_1 = self.interval_phase_1[0]
+                    motor_a_phase_0_value = -self.motor_a_phase_0[0]
+                    motor_b_phase_0_value = -self.motor_b_phase_0[0]
+                    motor_a_phase_1_value = -self.motor_a_phase_1[0]
+                    motor_b_phase_1_value = -self.motor_b_phase_1[0]
                 elif key == self.control_keys[3]:
-                    motor_a_phase_0_value = -self.motor_a_phase_0
-                    motor_b_phase_0_value = self.motor_b_phase_0
-                    motor_a_phase_1_value = -self.motor_a_phase_1
-                    motor_b_phase_1_value = self.motor_b_phase_1
+                    interval_phase_0 = self.interval_phase_0[1]
+                    interval_phase_1 = self.interval_phase_1[1]
+                    motor_a_phase_0_value = self.motor_a_phase_0[1]
+                    motor_b_phase_0_value = -self.motor_b_phase_0[1]
+                    motor_a_phase_1_value = self.motor_a_phase_1[1]
+                    motor_b_phase_1_value = -self.motor_b_phase_1[1]
+                elif key == self.control_keys[2]:
+                    interval_phase_0 = self.interval_phase_0[2]
+                    interval_phase_1 = self.interval_phase_1[2]
+                    motor_a_phase_0_value = -self.motor_a_phase_0[2]
+                    motor_b_phase_0_value = self.motor_b_phase_0[2]
+                    motor_a_phase_1_value = -self.motor_a_phase_1[2]
+                    motor_b_phase_1_value = self.motor_b_phase_1[2]
                 
                 ret = self.move_srv(
-                    self.interval_phase_0, 
+                    interval_phase_0, 
                     motor_a_phase_0_value,
                     motor_b_phase_0_value,
-                    self.interval_phase_1,
+                    interval_phase_1,
                     motor_a_phase_1_value, 
                     motor_b_phase_1_value
                 )

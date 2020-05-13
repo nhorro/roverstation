@@ -1,0 +1,4 @@
+<launch>  
+  	<node pkg="roverstation" name="roverstation" type="rovercmd.py" output="screen"> 
+  	</node>
+</launch>
